@@ -1315,24 +1315,6 @@
 </footer>
 
 <script>
-  // ── Toggle ──
-  function updateToggle() {
-    const isNight = document.body.classList.contains('night');
-    document.querySelector('.toggle-label').textContent = isNight ? 'Noche' : 'Día';
-    document.querySelector('.toggle-icon').textContent = isNight ? '☾' : '☀';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    // re-observe reveals for newly visible content
-    setTimeout(() => {
-      document.querySelectorAll('.reveal:not(.visible)').forEach(el => revealObserver.observe(el));
-    }, 100);
-  }
-
-  const hour = new Date().getHours();
-  if (hour >= 17 || hour < 2) {
-    document.body.classList.add('night');
-    updateToggle();
-  }
-
   // ── Scroll reveal with staggered items ──
   document.querySelectorAll('.cat').forEach(cat => {
     cat.querySelectorAll('.item').forEach((item, i) => {
@@ -1343,6 +1325,30 @@
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
   }, { threshold: 0.1 });
   document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+  // ── Toggle ──
+  function updateToggle() {
+    const isNight = document.body.classList.contains('night');
+    document.querySelector('.toggle-label').textContent = isNight ? 'Noche' : 'Día';
+    document.querySelector('.toggle-icon').textContent = isNight ? '☾' : '☀';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Reset reveals in newly visible sections so they can re-animate
+    document.querySelectorAll('.reveal.visible').forEach(el => {
+      if (el.offsetParent === null) {
+        el.classList.remove('visible');
+      }
+    });
+    // Re-observe after display changes take effect
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.reveal:not(.visible)').forEach(el => revealObserver.observe(el));
+    });
+  }
+
+  const hour = new Date().getHours();
+  if (hour >= 17 || hour < 2) {
+    document.body.classList.add('night');
+    updateToggle();
+  }
 
   // ── Sticky nav ──
   const nav = document.querySelector('.sticky-nav');
